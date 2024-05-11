@@ -168,23 +168,36 @@ const search = async (keyword, page) => {
 
 const genre = async (slug, page) => {
   try {
-    const res = await fetch(`${url.BASE_URL}/genre/${slug}/page/${page}`);
-    const body = await res.text();
+    const url = `https://nontonanimeid.cyou/genre/${slug}/page/${page}`;
+    const response = await fetch(url);
+    const body = await response.text();
     const $ = cheerio.load(body);
-    const data = {
-      anime: [],
-      paginationCount: null,
-    };
-  
-    data.anime = getCards($);
-    data.paginationCount = getPaginationCount($);
-  
-    return data;
+    const animeList = [];
+
+    $('.sera').each((index, element) => {
+      const imgSrc = $(element).find('img').attr('src');
+      const title = $(element).find('.title span').text();
+      const seriesUrl = $(element).find('.animeseries a').attr('href').replace('https://nontonanimeid.cyou/anime/', '');
+      const score = $(element).find('.kotakscore span').text().trim();
+
+      animeList.push({
+        title: title,
+        imgSrc: imgSrc,
+        seriesUrl: seriesUrl,
+        score: score
+      });
+    });
+
+    const paginationCount = getPaginationCount($);
+
+    return { anime: animeList, paginationCount: paginationCount };
   } catch (error) {
-    console.log("🚀 ~ genre ~ error:", error)
+    console.log("🚀 ~ genre ~ error:", error);
     throw new Error('Internal Server Error');
   }
 }
+
+
 
 const characterType = async (slug, page) => {
   try {
